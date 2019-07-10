@@ -1,6 +1,11 @@
 #!/bin/bash
 
-rsearch() {
+#UPSTREAM=${1:-'@{u}'} for some reason this throws exception only in script
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse @{u})
+#BASE=$(git merge-base @ "$UPSTREAM")
+
+file_find() {
   for d in */; do
     ( cd "$d"
     for file in $(ls); do
@@ -16,18 +21,21 @@ reading() {
     if [[ $file == "dependencies" ]]; then
       dependencies $line
     elif [[ $file == "url" ]]; then
-      url $line
+      git_url $line
     fi
   done < $file
 }
 
-url() {
-  if [[ -e $(echo "$line" | egrep -o '[^\/]*$') ]]; then
-    cd $(echo "$line" | egrep -o '[^\/]*$') && git pull
-    if [[ True ]]; then
+git_url() {
+  NAME=$(echo "$line" | egrep -o '[^\/]*$')
+
+  if [[ -e $NAME ]]; then
+    cd $NAME
+    if [ "$LOCAL" = "$REMOTE" ]; then
+      echo "$NAME Up-to-date"
+    else
       cd ..
       build
-    else :
     fi
   else
     git clone $line
@@ -36,7 +44,7 @@ url() {
 }
 
 dependencies() {
-  if [[ $1 == "update" ]]; then
+  if [True]; then
     :
   else
     apt install $line
@@ -50,9 +58,8 @@ build() {
 }
 
 main() {
-  #rsearch "dependecies"
-  rsearch "url"
-  #rsearch "build"
+  #file_find "dependecies"
+  file_find "url"
 }
 
 main
