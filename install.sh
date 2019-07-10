@@ -4,8 +4,8 @@ rsearch() {
   for d in */; do
     ( cd "$d"
     for file in $(ls); do
-      if [[ $file == "$1" ]]; then
-        reading "$1" "$file"
+      if [[ -f $file ]]; then
+        reading
       fi
     done)
   done
@@ -13,12 +13,10 @@ rsearch() {
 
 reading() {
   while IFS= read -r line; do
-    if [[ $1 == "url" ]]; then
-      url $line
-    elif [[ $1 == "dependencies" ]]; then
+    if [[ $file == "dependencies" ]]; then
       dependencies $line
-    elif [[ $1 == "build" ]]; then
-      build $line
+    elif [[ $file == "url" ]]; then
+      url $line
     fi
   done < $file
 }
@@ -26,8 +24,14 @@ reading() {
 url() {
   if [[ -e $(echo "$line" | egrep -o '[^\/]*$') ]]; then
     cd $(echo "$line" | egrep -o '[^\/]*$') && git pull
+    if [[ True ]]; then
+      cd ..
+      build
+    else :
+    fi
   else
     git clone $line
+    build
   fi
 }
 
@@ -40,13 +44,15 @@ dependencies() {
 }
 
 build() {
-  $line
+  while IFS= read -r line; do
+    $line
+  done < "build"
 }
 
 main() {
-  rsearch "dependecies"
+  #rsearch "dependecies"
   rsearch "url"
-  rsearch "build"
+  #rsearch "build"
 }
 
 main
