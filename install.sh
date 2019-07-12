@@ -7,6 +7,7 @@ REMOTE=$(git rev-parse @{u})
 
 file_find() {
   for d in */; do
+    #spawns subshell for each iteration
     ( cd "$d"
     for file in $(ls); do
       if [[ -f $file ]]; then
@@ -17,6 +18,7 @@ file_find() {
 }
 
 reading() {
+  #IFS removes trailing whitespace
   while IFS= read -r line; do
     if [[ $file == "dependencies" ]]; then
       dependencies $line
@@ -27,10 +29,12 @@ reading() {
 }
 
 git_url() {
+  #greps only the repo name from url
   NAME=$(echo "$line" | egrep -o '[^\/]*$')
 
   if [[ -e $NAME ]]; then
     cd $NAME
+    #compares Local and remote branch
     if [ "$LOCAL" = "$REMOTE" ]; then
       echo "$NAME Up-to-date"
     else
@@ -43,6 +47,7 @@ git_url() {
   fi
 }
 
+#TODO
 dependencies() {
   if [True]; then
     :
